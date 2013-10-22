@@ -30,12 +30,12 @@ function strFilter(parser, curr, next, filters, index){
 
 function commentFilter(parser, curr, next, filters, index){
 //    console.log("-----commentFilter-----");
-    if(parser.wrold == "/"){
-        if(curr == "/") {
+    if(curr == "/"){
+        if(next == "/") {
             parser.state = CppParser.STATE_COMMENT01;
             return;
-        }else if(curr == "*") {
-            parser.state = CppParser.STATE_COMMENT01;
+        }else if(next == "*") {
+            parser.state = CppParser.STATE_COMMENT02;
             return;
         }
     }
@@ -60,6 +60,8 @@ function CppParser(){
     this.world = "";
     this.content = null;
 
+    this.comments = [];
+
     this._doStr = function(curr, next, cb){
         this.world += curr;
         if(curr == '"') {
@@ -71,11 +73,17 @@ function CppParser(){
         CppParser.filters[0](this, curr, next, CppParser.filters, 0);
     };
 
-    this._doWorld = function(str, next, cb){
+    this._doWorld = function(curr, next, cb){
         invokeCb(this, cb, this.world);
     };
 
-    this._doComment = function(str, next, cb){};
+    this._doComment1 = function(curr, next, cb){
+        if(curr == "\n"){
+            this.world += curr;
+            this.comments.push(this.world);
+            invokeCb(this, cb, this.world);
+        }
+    };
 
     this.parse = function(str, cb){
         this.content = str;
@@ -85,11 +93,11 @@ function CppParser(){
             if(this.state == null){
                 this._doWorldStart(curr, next);
             }else{
-                console.log("%%%%%%%%%" + this.state + "%%%%%%%")
+//                console.log("%%%%%%%%%" + this.state + "%%%%%%%")
                 switch(this.state){
                     case CppParser.STATE_STR : this._doStr(curr, next, cb); break;
-                    case CppParser.STATE_COMMENT01 : break;
-                    case CppParser.STATE_COMMENT01 : break;
+                    case CppParser.STATE_COMMENT01 : this._doComment1(curr, next, cb); break;
+                    case CppParser.STATE_COMMENT02 : break;
                     case CppParser.STATE_WORLD : this._doWorld(curr, next, cb); break;
                     default : ;
                 }
@@ -105,6 +113,10 @@ CppParser.STATE_STATEMENT_END = "statementEnd";
 CppParser.filters = [strFilter, commentFilter, worldFilter, defaultFilter];
 
 var parser = new CppParser();
-parser.parse('var a = "asdf fdas";', function(world){
+var fs = require("fs");
+var path = require("path");
+console.log(__dirname);
+var content = fs.readFileSync(path.join(__dirname,"Test.h")).toString();
+parser.parse(content, function(world){
     console.log(world);
 });
