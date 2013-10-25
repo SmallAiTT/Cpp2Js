@@ -2,6 +2,8 @@
  * Created by small on 13-10-22.
  */
 
+var consts = {};
+
 var KW = {
     //bool、char、wchar_t、class、const、double、enum、float、int、long、short、signed、struct、union、unsigned、void、volatile
     type : {
@@ -42,3 +44,8 @@ var KW = {
      _ _self、_ _stdcall、_ _virtual、_ _inheritance
      */
 };
+consts.KW = KW;
+consts.DEFINE_ARR = ["#include", "#ifndef", "#define", "#endif"];
+consts.DEFINE_ARR2 = ["#include ", "#ifndef ", "#define ", "#endif "];
+
+module.exports = consts;
